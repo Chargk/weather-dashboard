@@ -7,7 +7,7 @@
       </h1>
       <div class="location-info" *ngIf="currentWeather()">
         <mat-icon>location_on</mat-icon>
-        {{ currentWeather()!.city }}, {{ currentWeather()!.country }}
+        {{ currentWeather()!.city }}{{ currentWeather()!.country ? ', ' + currentWeather()!.country : '' }}
       </div>
     </div>
   
@@ -62,7 +62,7 @@
         <mat-card-content>
           <div class="forecast-details">
             <div class="weather-icon">
-              <mat-icon>{{ day.icon }}</mat-icon>
+              <mat-icon>{{ getWeatherIcon(day.description) }}</mat-icon>
             </div>
             
             <div class="temperature-range">

@@ -81,4 +81,26 @@ export class ForecastComponent implements OnInit {
     if (forecast.length === 0) return 0;
     return Math.min(...forecast.map(day => day.low));
   }
+
+  protected getWeatherIcon(description: string): string {
+    const desc = description.toLowerCase();
+    
+    if (desc.includes('clear') || desc.includes('sunny')) {
+      return 'wb_sunny';
+    } else if (desc.includes('cloud')) {
+      return 'cloud';
+    } else if (desc.includes('rain')) {
+      return 'grain';
+    } else if (desc.includes('snow')) {
+      return 'ac_unit';
+    } else if (desc.includes('storm') || desc.includes('thunder')) {
+      return 'thunderstorm';
+    } else if (desc.includes('fog') || desc.includes('mist')) {
+      return 'foggy';
+    } else if (desc.includes('wind')) {
+      return 'air';
+    } else {
+      return 'wb_cloudy';
+    }
+  }
 }

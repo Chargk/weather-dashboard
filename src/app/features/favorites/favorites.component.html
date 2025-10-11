@@ -5,13 +5,6 @@
         <mat-icon>favorite</mat-icon>
         Favorite Cities
       </h1>
-      <button mat-raised-button 
-              color="primary" 
-              (click)="refreshAll()"
-              [disabled]="isLoading() || favorites().length === 0">
-        <mat-icon>refresh</mat-icon>
-        Refresh All
-      </button>
     </div>
   
     <!-- Loading State -->
@@ -57,7 +50,7 @@
   
         <mat-card-actions>
           <button mat-button color="primary" (click)="viewCity(city)">
-            <mat-icon>visibility</mat-icon>
+            
             View
           </button>
           <button mat-button 
@@ -69,7 +62,7 @@
             Refresh
           </button>
           <button mat-button color="warn" (click)="removeFromFavorites(city.id)">
-            <mat-icon>delete</mat-icon>
+            
             Remove
           </button>
         </mat-card-actions>
