@@ -58,15 +58,28 @@
         </div>
         
         <div class="toolbar-right">
-          <!-- Search Bar -->
+          <!-- Search Bar with Autocomplete -->
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search city...</mat-label>
-            <input matInput placeholder="Enter city name">
+            <input matInput 
+                   [formControl]="searchControl"
+                   placeholder="Enter city name"
+                   [matAutocomplete]="auto">
             <mat-icon matSuffix>search</mat-icon>
+            <mat-autocomplete #auto="matAutocomplete" 
+                             (optionSelected)="onCitySelected($event.option.value)">
+              <mat-option *ngFor="let city of filteredCities$ | async" [value]="city">
+                <mat-icon>location_on</mat-icon>
+                {{ city }}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
           
           <!-- Location Button -->
-          <button mat-icon-button matTooltip="Use current location" class="action-button">
+          <button mat-icon-button 
+                  matTooltip="Use current location" 
+                  class="action-button"
+                  (click)="useCurrentLocation()">
             <mat-icon>my_location</mat-icon>
           </button>
           

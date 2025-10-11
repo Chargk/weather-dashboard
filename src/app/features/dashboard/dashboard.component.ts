@@ -1,23 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from '../../shared/material.module';
-
-interface WeatherData {
-  city: string;
-  country: string;
-  temperature: number;
-  feelsLike: number;
-  humidity: number;
-  pressure: number;
-  windSpeed: number;
-  windDirection: string;
-  description: string;
-  icon: string;
-  visibility: number;
-  uvIndex: number;
-  sunrise: string;
-  sunset: string;
-}
+import { WeatherService, WeatherData, ForecastData } from '../../services/weather.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,47 +13,131 @@ interface WeatherData {
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+  private weatherService = inject(WeatherService);
+  private snackBar = inject(MatSnackBar);
+  private route = inject(ActivatedRoute);
+
   protected readonly isLoading = signal(true);
   protected readonly currentWeather = signal<WeatherData | null>(null);
-  protected readonly forecast = signal<any[]>([]);
+  protected readonly forecast = signal<ForecastData[]>([]);
+  protected readonly currentCity = signal('Kyiv');
 
   ngOnInit() {
-    // Simulate loading
-    setTimeout(() => {
-      this.loadWeatherData();
-    }, 1500);
+    // Check if city is provided in query params
+    this.route.queryParams.subscribe(params => {
+      if (params['city']) {
+        this.loadWeatherData(params['city']);
+      } else {
+        this.loadWeatherData(this.currentCity());
+      }
+    });
   }
 
-  private loadWeatherData() {
-    // Mock data for demonstration
-    const mockWeather: WeatherData = {
-      city: 'Kyiv',
-      country: 'Ukraine',
-      temperature: 22,
-      feelsLike: 25,
-      humidity: 65,
-      pressure: 1013,
-      windSpeed: 12,
-      windDirection: 'NW',
-      description: 'Partly Cloudy',
-      icon: 'wb_cloudy',
-      visibility: 10,
-      uvIndex: 6,
-      sunrise: '06:30',
-      sunset: '19:45'
-    };
+  protected loadWeatherData(city: string) {
+    this.isLoading.set(true);
+    
+    // Load current weather
+    this.weatherService.getCurrentWeather(city).subscribe({
+      next: (weather) => {
+        this.currentWeather.set(weather);
+        this.currentCity.set(city);
+        this.isLoading.set(false);
+        
+        // Show success message
+        this.snackBar.open(`Weather data loaded for ${weather.city}`, 'Close', {
+          duration: 2000
+        });
+      },
+      error: (error) => {
+        console.error('Error loading weather:', error);
+        this.snackBar.open('Error loading weather data. Please try again.', 'Close', {
+          duration: 3000
+        });
+        this.isLoading.set(false);
+      }
+    });
 
-    const mockForecast = [
-      { day: 'Tomorrow', high: 24, low: 16, icon: 'wb_sunny', description: 'Sunny' },
-      { day: 'Wednesday', high: 26, low: 18, icon: 'wb_cloudy', description: 'Cloudy' },
-      { day: 'Thursday', high: 23, low: 15, icon: 'grain', description: 'Rainy' },
-      { day: 'Friday', high: 25, low: 17, icon: 'wb_sunny', description: 'Sunny' },
-      { day: 'Saturday', high: 27, low: 19, icon: 'wb_cloudy', description: 'Partly Cloudy' }
-    ];
+    // Load forecast
+    this.weatherService.getForecast(city).subscribe({
+      next: (forecast) => {
+        this.forecast.set(forecast);
+      },
+      error: (error) => {
+        console.error('Error loading forecast:', error);
+        this.snackBar.open('Error loading forecast data.', 'Close', {
+          duration: 2000
+        });
+      }
+    });
+  }
 
-    this.currentWeather.set(mockWeather);
-    this.forecast.set(mockForecast);
-    this.isLoading.set(false);
+  protected useCurrentLocation() {
+    this.isLoading.set(true);
+    
+    this.weatherService.getCurrentLocation()
+      .then(coords => {
+        this.weatherService.getWeatherByCoords(coords.lat, coords.lon).subscribe({
+          next: (weather) => {
+            this.currentWeather.set(weather);
+            this.currentCity.set(`${weather.city}, ${weather.country}`);
+            this.isLoading.set(false);
+            
+            this.snackBar.open(`Location found: ${weather.city}`, 'Close', {
+              duration: 2000
+            });
+            
+            // Also load forecast for this location
+            this.weatherService.getForecast(`${weather.city}, ${weather.country}`).subscribe({
+              next: (forecast) => {
+                this.forecast.set(forecast);
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Error loading weather by location:', error);
+            this.snackBar.open('Error getting your location weather.', 'Close', {
+              duration: 3000
+            });
+            this.isLoading.set(false);
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error getting location:', error);
+        this.snackBar.open('Unable to get your location. Please enable location services.', 'Close', {
+          duration: 3000
+        });
+        this.isLoading.set(false);
+      });
+  }
+
+  protected refreshWeather() {
+    this.loadWeatherData(this.currentCity());
+  }
+
+  protected addToFavorites() {
+    // TODO: Implement favorites functionality
+    this.snackBar.open('Added to favorites!', 'Close', {
+      duration: 2000
+    });
+  }
+
+  protected shareWeather() {
+    if (navigator.share && this.currentWeather()) {
+      navigator.share({
+        title: `Weather in ${this.currentWeather()!.city}`,
+        text: `Current temperature: ${this.currentWeather()!.temperature}°C, ${this.currentWeather()!.description}`,
+        url: window.location.href
+      });
+    } else {
+      // Fallback: copy to clipboard
+      const text = `Weather in ${this.currentWeather()!.city}: ${this.currentWeather()!.temperature}°C, ${this.currentWeather()!.description}`;
+      navigator.clipboard.writeText(text).then(() => {
+        this.snackBar.open('Weather info copied to clipboard!', 'Close', {
+          duration: 2000
+        });
+      });
+    }
   }
 
   protected getTemperatureColor(temp: number): string {
