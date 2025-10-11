@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, switchMap, startWith, map } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,7 +10,7 @@ import { WeatherService } from '../../services/weather.service';
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterOutlet],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.scss']
 })

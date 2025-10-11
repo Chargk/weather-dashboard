@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from '../../shared/material.module';
 import { WeatherService, WeatherData, ForecastData } from '../../services/weather.service';
+import { FavoritesComponent } from '../favorites/favorites.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -116,27 +117,66 @@ export class DashboardComponent implements OnInit {
   }
 
   protected addToFavorites() {
-    // TODO: Implement favorites functionality
-    this.snackBar.open('Added to favorites!', 'Close', {
+    const weather = this.currentWeather();
+    if (!weather) return;
+
+    // Check if already in favorites
+    const favorites = this.getFavorites();
+    const exists = favorites.find(fav => fav.id === `${weather.city}-${weather.country}`);
+    
+    if (exists) {
+      this.snackBar.open('City is already in favorites!', 'Close', {
+        duration: 2000
+      });
+      return;
+    }
+
+    // Add to favorites
+    const favorite = {
+      id: `${weather.city}-${weather.country}`,
+      name: weather.city,
+      country: weather.country,
+      temperature: weather.temperature,
+      description: weather.description,
+      icon: weather.icon,
+      lastUpdated: new Date()
+    };
+
+    const updatedFavorites = [...favorites, favorite];
+    localStorage.setItem('favorite-cities', JSON.stringify(updatedFavorites));
+
+    this.snackBar.open(`Added ${weather.city} to favorites!`, 'Close', {
       duration: 2000
     });
   }
 
   protected shareWeather() {
-    if (navigator.share && this.currentWeather()) {
+    const weather = this.currentWeather();
+    if (!weather) return;
+
+    if (navigator.share) {
       navigator.share({
-        title: `Weather in ${this.currentWeather()!.city}`,
-        text: `Current temperature: ${this.currentWeather()!.temperature}°C, ${this.currentWeather()!.description}`,
+        title: `Weather in ${weather.city}`,
+        text: `Current temperature: ${weather.temperature}°C, ${weather.description}`,
         url: window.location.href
       });
     } else {
       // Fallback: copy to clipboard
-      const text = `Weather in ${this.currentWeather()!.city}: ${this.currentWeather()!.temperature}°C, ${this.currentWeather()!.description}`;
+      const text = `Weather in ${weather.city}: ${weather.temperature}°C, ${weather.description}`;
       navigator.clipboard.writeText(text).then(() => {
         this.snackBar.open('Weather info copied to clipboard!', 'Close', {
           duration: 2000
         });
       });
+    }
+  }
+
+  private getFavorites(): any[] {
+    try {
+      const stored = localStorage.getItem('favorite-cities');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
     }
   }
 

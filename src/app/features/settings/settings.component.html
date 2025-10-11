@@ -1,0 +1,172 @@
+<div class="settings-container fade-in">
+    <!-- Header -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <mat-icon>settings</mat-icon>
+        Settings
+      </h1>
+    </div>
+  
+    <!-- Settings Sections -->
+    <div class="settings-sections">
+      
+      <!-- Units Section -->
+      <mat-card class="settings-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>straighten</mat-icon>
+            Units & Measurements
+          </mat-card-title>
+          <mat-card-subtitle>Configure display units for weather data</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Temperature Unit</h3>
+              <p>Choose how temperature is displayed</p>
+            </div>
+            <mat-radio-group [formControl]="temperatureUnit" class="radio-group" name="temperature">
+              <mat-radio-button value="celsius">Celsius (°C)</mat-radio-button>
+              <mat-radio-button value="fahrenheit">Fahrenheit (°F)</mat-radio-button>
+            </mat-radio-group>
+          </div>
+  
+          <mat-divider></mat-divider>
+  
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Wind Speed Unit</h3>
+              <p>Choose wind speed measurement unit</p>
+            </div>
+            <mat-radio-group [formControl]="windUnit" class="radio-group" name="wind">
+              <mat-radio-button value="kmh">km/h</mat-radio-button>
+              <mat-radio-button value="mph">mph</mat-radio-button>
+              <mat-radio-button value="ms">m/s</mat-radio-button>
+            </mat-radio-group>
+          </div>
+  
+          <mat-divider></mat-divider>
+  
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Pressure Unit</h3>
+              <p>Choose atmospheric pressure unit</p>
+            </div>
+            <mat-radio-group [formControl]="pressureUnit" class="radio-group" name="pressure">
+              <mat-radio-button value="hpa">hPa</mat-radio-button>
+              <mat-radio-button value="mmhg">mmHg</mat-radio-button>
+              <mat-radio-button value="inHg">inHg</mat-radio-button>
+            </mat-radio-group>
+          </div>
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Appearance Section -->
+      <mat-card class="settings-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>palette</mat-icon>
+            Appearance
+          </mat-card-title>
+          <mat-card-subtitle>Customize the look and feel of the app</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Dark Mode</h3>
+              <p>Switch between light and dark themes</p>
+            </div>
+            <mat-slide-toggle 
+              [checked]="isDarkMode()" 
+              (change)="toggleDarkMode()"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Notifications Section -->
+      <mat-card class="settings-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>notifications</mat-icon>
+            Notifications
+          </mat-card-title>
+          <mat-card-subtitle>Manage notification preferences</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Weather Alerts</h3>
+              <p>Receive notifications for severe weather conditions</p>
+            </div>
+            <mat-slide-toggle 
+              [checked]="notifications()" 
+              (change)="toggleNotifications()"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Data Section -->
+      <mat-card class="settings-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>refresh</mat-icon>
+            Data & Updates
+          </mat-card-title>
+          <mat-card-subtitle>Configure data refresh and caching</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h3>Auto Refresh</h3>
+              <p>Automatically update weather data</p>
+            </div>
+            <mat-slide-toggle 
+              [checked]="autoRefresh()" 
+              (change)="toggleAutoRefresh()"
+              color="primary">
+            </mat-slide-toggle>
+          </div>
+  
+          <mat-divider *ngIf="autoRefresh()"></mat-divider>
+  
+          <div class="setting-item" *ngIf="autoRefresh()">
+            <div class="setting-info">
+              <h3>Refresh Interval</h3>
+              <p>How often to update weather data (minutes)</p>
+            </div>
+            <mat-slider 
+              [formControl]="refreshInterval"
+              min="5" 
+              max="60" 
+              step="5"
+              class="slider">
+              <input matSliderThumb>
+            </mat-slider>
+            <div class="slider-value">{{ refreshInterval.value }} minutes</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+  
+    </div>
+  
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button mat-raised-button color="primary" (click)="saveSettings()">
+        <mat-icon>save</mat-icon>
+        Save Settings
+      </button>
+      
+      <button mat-stroked-button color="warn" (click)="resetToDefaults()">
+        <mat-icon>restore</mat-icon>
+        Reset to Defaults
+      </button>
+    </div>
+  </div>

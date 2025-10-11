@@ -1,0 +1,78 @@
+<div class="favorites-container fade-in">
+    <!-- Header -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <mat-icon>favorite</mat-icon>
+        Favorite Cities
+      </h1>
+      <button mat-raised-button 
+              color="primary" 
+              (click)="refreshAll()"
+              [disabled]="isLoading() || favorites().length === 0">
+        <mat-icon>refresh</mat-icon>
+        Refresh All
+      </button>
+    </div>
+  
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="loading-container">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Updating all cities...</p>
+    </div>
+  
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && favorites().length === 0" class="empty-state">
+      <mat-icon class="empty-icon">favorite_border</mat-icon>
+      <h2>No Favorite Cities Yet</h2>
+      <p>Add cities to your favorites from the dashboard to see them here.</p>
+      <button mat-raised-button color="primary" routerLink="/dashboard">
+        <mat-icon>add</mat-icon>
+        Go to Dashboard
+      </button>
+    </div>
+  
+    <!-- Favorites Grid -->
+    <div *ngIf="!isLoading() && favorites().length > 0" class="favorites-grid">
+      <mat-card *ngFor="let city of favorites()" class="favorite-card">
+        <mat-card-header>
+          <div mat-card-avatar class="weather-avatar">
+            <mat-icon class="weather-icon">{{ city.icon }}</mat-icon>
+          </div>
+          <mat-card-title>{{ city.name }}</mat-card-title>
+          <mat-card-subtitle>{{ city.country }}</mat-card-subtitle>
+        </mat-card-header>
+  
+        <mat-card-content>
+          <div class="weather-info">
+            <div class="temperature" [style.color]="getTemperatureColor(city.temperature)">
+              {{ city.temperature }}°
+            </div>
+            <div class="description">{{ city.description | titlecase }}</div>
+            <div class="last-updated">
+              <mat-icon>schedule</mat-icon>
+              {{ formatLastUpdated(city.lastUpdated) }}
+            </div>
+          </div>
+        </mat-card-content>
+  
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="viewCity(city)">
+            <mat-icon>visibility</mat-icon>
+            View
+          </button>
+          <button mat-button 
+                  color="accent" 
+                  (click)="refreshCity(city)"
+                  [disabled]="refreshingCities().has(city.id)">
+            <mat-icon *ngIf="!refreshingCities().has(city.id)">refresh</mat-icon>
+            <mat-spinner *ngIf="refreshingCities().has(city.id)" diameter="20"></mat-spinner>
+            Refresh
+          </button>
+          <button mat-button color="warn" (click)="removeFromFavorites(city.id)">
+            <mat-icon>delete</mat-icon>
+            Remove
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>

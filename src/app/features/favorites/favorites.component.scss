@@ -1,0 +1,208 @@
+.favorites-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 32px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+      
+      .mat-icon {
+        color: #e91e63;
+        font-size: 36px;
+      }
+    }
+  }
+  
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    
+    p {
+      margin-top: 20px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+    }
+  }
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    text-align: center;
+    
+    .empty-icon {
+      font-size: 80px;
+      color: #e91e63;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    h2 {
+      font-size: 24px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 24px;
+      max-width: 400px;
+    }
+  }
+  
+  .favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  
+  .favorite-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .mat-mdc-card-header {
+      padding: 20px 20px 12px;
+      
+      .weather-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        .weather-icon {
+          font-size: 24px;
+          color: white;
+        }
+      }
+      
+      .mat-mdc-card-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+      }
+      
+      .mat-mdc-card-subtitle {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+    
+    .mat-mdc-card-content {
+      padding: 0 20px 16px;
+      
+      .weather-info {
+        text-align: center;
+        
+        .temperature {
+          font-size: 48px;
+          font-weight: 300;
+          line-height: 1;
+          margin-bottom: 8px;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .description {
+          font-size: 16px;
+          color: #666;
+          margin-bottom: 12px;
+          text-transform: capitalize;
+        }
+        
+        .last-updated {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          font-size: 12px;
+          color: #999;
+          
+          .mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+    }
+    
+    .mat-mdc-card-actions {
+      padding: 16px 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      
+      button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-size: 14px;
+      }
+    }
+  }
+  
+  // Responsive design
+  @media (max-width: 768px) {
+    .favorites-container {
+      padding: 16px;
+    }
+    
+    .page-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+      
+      .page-title {
+        font-size: 24px;
+      }
+    }
+    
+    .favorites-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    .favorite-card {
+      .mat-mdc-card-actions {
+        flex-direction: column;
+        
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
