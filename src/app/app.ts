@@ -1,12 +1,13 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { NavigationComponent } from './shared/navigation/navigation.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  standalone: true,
+  imports: [NavigationComponent],
+  template: '<app-navigation></app-navigation>',
+  styleUrls: ['./app.scss']
 })
 export class App {
-  protected readonly title = signal('weather-dashboard');
+  title = 'Weather Dashboard';
 }

@@ -1,0 +1,101 @@
+<mat-sidenav-container class="sidenav-container">
+    <!-- Sidebar Navigation -->
+    <mat-sidenav #sidenav 
+                 mode="side" 
+                 opened="true" 
+                 class="sidenav"
+                 [class.dark-theme]="isDarkMode()">
+      <div class="sidenav-header">
+        <mat-icon class="weather-icon">wb_sunny</mat-icon>
+        <h2 class="app-title">Weather Dashboard</h2>
+      </div>
+      
+      <mat-nav-list class="nav-list">
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+        
+        <a mat-list-item routerLink="/favorites" routerLinkActive="active">
+          <mat-icon matListItemIcon>favorite</mat-icon>
+          <span matListItemTitle>Favorites</span>
+        </a>
+        
+        <a mat-list-item routerLink="/forecast" routerLinkActive="active">
+          <mat-icon matListItemIcon>trending_up</mat-icon>
+          <span matListItemTitle>Forecast</span>
+        </a>
+        
+        <a mat-list-item routerLink="/settings" routerLinkActive="active">
+          <mat-icon matListItemIcon>settings</mat-icon>
+          <span matListItemTitle>Settings</span>
+        </a>
+      </mat-nav-list>
+      
+      <div class="sidenav-footer">
+        <mat-divider></mat-divider>
+        <div class="theme-toggle">
+          <mat-icon>wb_sunny</mat-icon>
+          <mat-slide-toggle 
+            [checked]="isDarkMode()" 
+            (change)="toggleTheme()"
+            color="primary">
+          </mat-slide-toggle>
+          <mat-icon>dark_mode</mat-icon>
+        </div>
+      </div>
+    </mat-sidenav>
+  
+    <!-- Main Content -->
+    <mat-sidenav-content class="main-content">
+      <!-- Top Toolbar -->
+      <div class="toolbar" [class.dark-theme]="isDarkMode()">
+        <div class="toolbar-left">
+          <button mat-icon-button (click)="sidenav.toggle()" class="menu-button">
+            <mat-icon>menu</mat-icon>
+          </button>
+          <span class="toolbar-title">Weather Dashboard</span>
+        </div>
+        
+        <div class="toolbar-right">
+          <!-- Search Bar -->
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search city...</mat-label>
+            <input matInput placeholder="Enter city name">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          
+          <!-- Location Button -->
+          <button mat-icon-button matTooltip="Use current location" class="action-button">
+            <mat-icon>my_location</mat-icon>
+          </button>
+          
+          <!-- Settings Menu -->
+          <button mat-icon-button [matMenuTriggerFor]="settingsMenu" class="action-button">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </div>
+        
+        <mat-menu #settingsMenu="matMenu">
+          <button mat-menu-item>
+            <mat-icon>refresh</mat-icon>
+            <span>Refresh Data</span>
+          </button>
+          <button mat-menu-item>
+            <mat-icon>download</mat-icon>
+            <span>Export Data</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item>
+            <mat-icon>help</mat-icon>
+            <span>Help & Support</span>
+          </button>
+        </mat-menu>
+      </div>
+  
+      <!-- Main Content Area -->
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
