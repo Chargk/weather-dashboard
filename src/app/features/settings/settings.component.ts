@@ -18,7 +18,6 @@ export class SettingsComponent implements OnInit {
   protected readonly temperatureUnit = new FormControl('celsius');
   protected readonly windUnit = new FormControl('kmh');
   protected readonly pressureUnit = new FormControl('hpa');
-  protected readonly isDarkMode = signal(false);
   protected readonly notifications = signal(true);
   protected readonly autoRefresh = signal(true);
   protected readonly refreshInterval = new FormControl(15);
@@ -44,10 +43,6 @@ export class SettingsComponent implements OnInit {
     const pressureUnit = localStorage.getItem('pressure-unit') || 'hpa';
     this.pressureUnit.setValue(pressureUnit);
 
-    // Load dark mode
-    const darkMode = localStorage.getItem('dark-mode') === 'true';
-    this.isDarkMode.set(darkMode);
-
     // Load notifications
     const notifications = localStorage.getItem('notifications') !== 'false';
     this.notifications.set(notifications);
@@ -67,7 +62,6 @@ export class SettingsComponent implements OnInit {
     localStorage.setItem('temperature-unit', this.temperatureUnit.value || 'celsius');
     localStorage.setItem('wind-unit', this.windUnit.value || 'kmh');
     localStorage.setItem('pressure-unit', this.pressureUnit.value || 'hpa');
-    localStorage.setItem('dark-mode', this.isDarkMode().toString());
     localStorage.setItem('notifications', this.notifications().toString());
     localStorage.setItem('auto-refresh', this.autoRefresh().toString());
     localStorage.setItem('refresh-interval', this.refreshInterval.value?.toString() || '15');
@@ -75,10 +69,6 @@ export class SettingsComponent implements OnInit {
     this.snackBar.open('Settings saved successfully!', 'Close', {
       duration: 2000
     });
-  }
-
-  protected toggleDarkMode() {
-    this.isDarkMode.set(!this.isDarkMode());
   }
 
   protected toggleNotifications() {
@@ -93,7 +83,6 @@ export class SettingsComponent implements OnInit {
     this.temperatureUnit.setValue('celsius');
     this.windUnit.setValue('kmh');
     this.pressureUnit.setValue('hpa');
-    this.isDarkMode.set(false);
     this.notifications.set(true);
     this.autoRefresh.set(true);
     this.refreshInterval.setValue(15);

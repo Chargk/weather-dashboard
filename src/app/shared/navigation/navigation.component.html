@@ -1,114 +1,134 @@
 <mat-sidenav-container class="sidenav-container">
-    <!-- Sidebar Navigation -->
-    <mat-sidenav #sidenav 
-                 mode="side" 
-                 opened="true" 
-                 class="sidenav"
-                 [class.dark-theme]="isDarkMode()">
-      <div class="sidenav-header">
-        <mat-icon class="weather-icon">wb_sunny</mat-icon>
-        <h2 class="app-title">Weather Dashboard</h2>
+  <!-- Sidebar Navigation -->
+  <mat-sidenav #sidenav 
+               mode="over" 
+               opened="false" 
+               class="sidenav">
+    <div class="sidenav-header">
+      <mat-icon class="weather-icon">wb_sunny</mat-icon>
+      <h2 class="app-title">Weather Dashboard</h2>
+    </div>
+    
+    <mat-nav-list class="nav-list">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      
+      <a mat-list-item routerLink="/favorites" routerLinkActive="active">
+        <mat-icon matListItemIcon>favorite</mat-icon>
+        <span matListItemTitle>Favorites</span>
+      </a>
+      
+      <a mat-list-item routerLink="/forecast" routerLinkActive="active">
+        <mat-icon matListItemIcon>trending_up</mat-icon>
+        <span matListItemTitle>Forecast</span>
+      </a>
+      
+      <a mat-list-item routerLink="/settings" routerLinkActive="active">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle>Settings</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content class="main-content">
+    <!-- Top Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button mat-icon-button (click)="sidenav.toggle()" class="menu-button">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="toolbar-title">Weather Dashboard</span>
       </div>
       
-      <mat-nav-list class="nav-list">
-        <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-          <mat-icon matListItemIcon>dashboard</mat-icon>
-          <span matListItemTitle>Dashboard</span>
-        </a>
-        
-        <a mat-list-item routerLink="/favorites" routerLinkActive="active">
-          <mat-icon matListItemIcon>favorite</mat-icon>
-          <span matListItemTitle>Favorites</span>
-        </a>
-        
-        <a mat-list-item routerLink="/forecast" routerLinkActive="active">
-          <mat-icon matListItemIcon>trending_up</mat-icon>
-          <span matListItemTitle>Forecast</span>
-        </a>
-        
-        <a mat-list-item routerLink="/settings" routerLinkActive="active">
-          <mat-icon matListItemIcon>settings</mat-icon>
-          <span matListItemTitle>Settings</span>
-        </a>
-      </mat-nav-list>
-      
-      <div class="sidenav-footer">
-        <mat-divider></mat-divider>
-        <div class="theme-toggle">
-          <mat-icon>wb_sunny</mat-icon>
-          <mat-slide-toggle 
-            [checked]="isDarkMode()" 
-            (change)="toggleTheme()"
-            color="primary">
-          </mat-slide-toggle>
-          <mat-icon>dark_mode</mat-icon>
-        </div>
-      </div>
-    </mat-sidenav>
-  
-    <!-- Main Content -->
-    <mat-sidenav-content class="main-content">
-      <!-- Top Toolbar -->
-      <div class="toolbar" [class.dark-theme]="isDarkMode()">
-        <div class="toolbar-left">
-          <button mat-icon-button (click)="sidenav.toggle()" class="menu-button">
-            <mat-icon>menu</mat-icon>
-          </button>
-          <span class="toolbar-title">Weather Dashboard</span>
-        </div>
-        
-        <div class="toolbar-right">
-          <!-- Search Bar with Autocomplete -->
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Search city...</mat-label>
-            <input matInput 
-                   [formControl]="searchControl"
-                   placeholder="Enter city name"
-                   [matAutocomplete]="auto">
-            <mat-icon matSuffix>search</mat-icon>
-            <mat-autocomplete #auto="matAutocomplete" 
-                             (optionSelected)="onCitySelected($event.option.value)">
+      <div class="toolbar-right">
+        <!-- Search Bar with Autocomplete -->
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search city...</mat-label>
+          <input matInput 
+                 [formControl]="searchControl"
+                 placeholder="Enter city name"
+                 [matAutocomplete]="auto">
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-autocomplete #auto="matAutocomplete" 
+                           (optionSelected)="onCitySelected($event.option.value)">
+            
+            <!-- Search History Section - показуємо тільки якщо немає результатів пошуку -->
+            <div *ngIf="searchHistory().length > 0 && (!searchControl.value || searchControl.value.length <= 2)" class="autocomplete-section">
+              <div class="section-header">
+                <mat-icon>history</mat-icon>
+                <span>Recent searches</span>
+                <button mat-icon-button 
+                        (click)="clearSearchHistory(); $event.stopPropagation()" 
+                        class="clear-button"
+                        matTooltip="Clear history">
+                  <mat-icon>clear</mat-icon>
+                </button>
+              </div>
+              <mat-option *ngFor="let city of searchHistory()" [value]="city" class="history-option">
+                <mat-icon>history</mat-icon>
+                {{ city }}
+              </mat-option>
+            </div>
+            
+            <!-- Search Results Section - показуємо коли є результаті пошуку -->
+            <div *ngIf="searchControl.value && searchControl.value.length > 2 && (filteredCities$ | async)?.length" class="autocomplete-section">
+              <div class="section-header">
+                <mat-icon>search</mat-icon>
+                <span>Search results</span>
+              </div>
               <mat-option *ngFor="let city of filteredCities$ | async" [value]="city">
                 <mat-icon>location_on</mat-icon>
                 {{ city }}
               </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
-          
-          <!-- Location Button -->
-          <button mat-icon-button 
-                  matTooltip="Use current location" 
-                  class="action-button"
-                  (click)="useCurrentLocation()">
-            <mat-icon>my_location</mat-icon>
-          </button>
-          
-          <!-- Settings Menu -->
-          <button mat-icon-button [matMenuTriggerFor]="settingsMenu" class="action-button">
-            <mat-icon>more_vert</mat-icon>
-          </button>
-        </div>
+            </div>
+            
+            <!-- No Results -->
+            <div *ngIf="searchControl.value && searchControl.value.length > 2 && (filteredCities$ | async)?.length === 0" class="no-results">
+              <mat-option disabled>
+                <mat-icon>search_off</mat-icon>
+                No cities found for "{{ searchControl.value }}"
+              </mat-option>
+            </div>
+          </mat-autocomplete>
+        </mat-form-field>
         
-        <mat-menu #settingsMenu="matMenu">
-          <button mat-menu-item>
-            <mat-icon>refresh</mat-icon>
-            <span>Refresh Data</span>
-          </button>
-          <button mat-menu-item>
-            <mat-icon>download</mat-icon>
-            <span>Export Data</span>
-          </button>
-          <mat-divider></mat-divider>
-          <button mat-menu-item>
-            <mat-icon>help</mat-icon>
-            <span>Help & Support</span>
-          </button>
-        </mat-menu>
+        <!-- Location Button -->
+        <button mat-icon-button 
+                matTooltip="Use current location" 
+                class="action-button"
+                (click)="useCurrentLocation()">
+          <mat-icon>my_location</mat-icon>
+        </button>
+        
+        <!-- Settings Menu -->
+        <button mat-icon-button [matMenuTriggerFor]="settingsMenu" class="action-button">
+          <mat-icon>more_vert</mat-icon>
+        </button>
       </div>
-  
-      <!-- Main Content Area -->
-      <div class="content-wrapper">
-        <router-outlet></router-outlet>
-      </div>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
+      
+      <mat-menu #settingsMenu="matMenu">
+        <button mat-menu-item>
+          <mat-icon>refresh</mat-icon>
+          <span>Refresh Data</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>download</mat-icon>
+          <span>Export Data</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item>
+          <mat-icon>help</mat-icon>
+          <span>Help & Support</span>
+        </button>
+      </mat-menu>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

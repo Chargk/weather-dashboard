@@ -10,11 +10,6 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
-  
-  &.dark-theme {
-    background: rgba(33, 33, 33, 0.95);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-  }
 }
 
 .sidenav-header {
@@ -68,27 +63,6 @@
   }
 }
 
-.sidenav-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px;
-  
-  .theme-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px;
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: 12px;
-    
-    .mat-icon {
-      color: #667eea;
-    }
-  }
-}
-
 .main-content {
   background: transparent;
   overflow-x: hidden; 
@@ -98,104 +72,61 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 0 16px;
-  height: 64px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  box-sizing: border-box;
-  
-  &.dark-theme {
-    background: rgba(33, 33, 33, 0.95);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
+  position: relative;
+  z-index: 10;
   
   .toolbar-left {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    gap: 16px;
     
     .menu-button {
-      margin-right: 16px;
+      color: #667eea;
+      z-index: 11;
+      position: relative;
+      pointer-events: auto;
     }
     
     .toolbar-title {
       font-size: 20px;
-      font-weight: 500;
+      font-weight: 600;
       color: #333;
-      
-      .dark-theme & {
-        color: white;
-      }
     }
   }
   
   .toolbar-right {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 16px;
     
     .search-field {
-    height: 50px;
-      width: 190px; 
+      min-width: 300px;
       
-      .mat-mdc-form-field-outline {
-        color: #667eea;
+      .mat-mdc-form-field-wrapper {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
       }
     }
     
     .action-button {
-      width: 40px;
-      height: 40px;
       color: #667eea;
+      transition: color 0.3s ease;
       
       &:hover {
-        background-color: rgba(102, 126, 234, 0.1);
+        transform: scale(1.05);
       }
     }
   }
 }
 
 .content-wrapper {
-  padding: 24px;
-  min-height: calc(100vh - 64px);
-  background: transparent;
-}
-
-// Responsive design
-@media (max-width: 1200px) {
-  .toolbar {
-    .toolbar-right {
-      .search-field {
-        width: 160px;
-      }
-    }
-    
-    .toolbar-left {
-      .toolbar-title {
-        font-size: 18px;
-      }
-    }
-  }
-}
-
-@media (max-width: 992px) {
-  .toolbar {
-    .toolbar-right {
-      .search-field {
-        width: 140px;
-      }
-    }
-    
-    .toolbar-left {
-      .toolbar-title {
-        font-size: 16px;
-      }
-    }
-  }
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
 }
 
 @media (max-width: 768px) {
@@ -204,70 +135,80 @@
   }
   
   .toolbar {
-    padding: 0 8px;
+    padding: 12px 16px;
     
     .toolbar-right {
       .search-field {
-        width: 120px;
+        min-width: 200px;
       }
-      
-      .action-button {
-        width: 36px;
-        height: 36px;
-      }
-    }
-    
-    .toolbar-left {
-      .toolbar-title {
-        display: none;
-      }
-      
-      .menu-button {
-        margin-right: 8px;
-      }
-    }
-  }
-  
-  .content-wrapper {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .toolbar {
-    .toolbar-right {
-      .search-field {
-        width: 100px;
-      }
-      
-      gap: 4px;
     }
   }
 }
 
-.mat-mdc-form-field {
-  .mat-mdc-text-field-wrapper {
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-  }
-  
-  .mat-mdc-form-field-outline {
-    color: #667eea;
-  }
-  
-  .mat-mdc-form-field-outline-thick {
-    color: #667eea;
-  }
-  
-
-  &.mat-mdc-form-field-type-mat-input {
-    .mat-mdc-text-field-wrapper {
-      height: 40px;
+.autocomplete-section {
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    background: rgba(102, 126, 234, 0.1);
+    border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+    
+    .mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
     }
     
-    .mat-mdc-form-field-infix {
-      min-height: 40px;
-      padding: 8px 0;
+    .clear-button {
+      margin-left: auto;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      
+      .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
     }
+  }
+  
+  .history-option {
+    padding-left: 40px !important;
+    
+    .mat-icon {
+      color: #999;
+      margin-right: 12px;
+    }
+  }
+}
+
+.no-results {
+  .mat-icon {
+    color: #999;
+    margin-right: 12px;
+  }
+}
+
+.mat-mdc-autocomplete-panel {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.mat-mdc-option {
+  padding: 12px 16px;
+  
+  &:hover {
+    background: rgba(102, 126, 234, 0.1);
+  }
+  
+  &.mat-active {
+    background: rgba(102, 126, 234, 0.15);
   }
 }
