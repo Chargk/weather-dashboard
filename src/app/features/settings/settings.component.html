@@ -69,20 +69,38 @@
             <mat-icon>notifications</mat-icon>
             Notifications
           </mat-card-title>
-          <mat-card-subtitle>Manage notification preferences</mat-card-subtitle>
+          <mat-card-subtitle>Manage weather notifications and alerts</mat-card-subtitle>
         </mat-card-header>
         
         <mat-card-content>
           <div class="setting-item">
             <div class="setting-info">
-              <h3>Weather Alerts</h3>
-              <p>Receive notifications for severe weather conditions</p>
+              <h3>Weather Notifications</h3>
+              <p>Get notified about weather changes in your favorite cities</p>
             </div>
-            <mat-slide-toggle 
-              [checked]="notifications()" 
-              (change)="toggleNotifications()"
-              color="primary">
-            </mat-slide-toggle>
+            <div class="notification-controls">
+              <mat-slide-toggle 
+                [checked]="notificationsEnabled()" 
+                (change)="toggleNotifications()"
+                [disabled]="notificationPermission() === 'denied'">
+              </mat-slide-toggle>
+              <button *ngIf="notificationPermission() !== 'granted'" 
+                      mat-button 
+                      color="primary"
+                      (click)="requestNotificationPermission()"
+                      class="permission-button">
+                <mat-icon>notifications_active</mat-icon>
+                Enable Notifications
+              </button>
+            </div>
+          </div>
+          
+          <div class="setting-item" *ngIf="notificationPermission() === 'denied'">
+            <div class="setting-info">
+              <h3>Permission Required</h3>
+              <p>Notifications are blocked. Please enable them in your browser settings.</p>
+            </div>
+            <mat-icon class="warning-icon">warning</mat-icon>
           </div>
         </mat-card-content>
       </mat-card>

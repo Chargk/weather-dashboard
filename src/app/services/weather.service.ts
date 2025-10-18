@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, forkJoin } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import { NotificationService } from './notification.service';
 
 export interface WeatherData {
   city: string;
@@ -46,7 +47,9 @@ export class WeatherService {
   private forecastSubject = new BehaviorSubject<ForecastData[]>([]);
   public forecast$ = this.forecastSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  private lastWeatherData: Map<string, WeatherData> = new Map();
+
+  constructor(private http: HttpClient, private notificationService: NotificationService) {}
 
   getCurrentWeather(city: string): Observable<WeatherData> {
     return this.getCoordinates(city).pipe(
@@ -60,7 +63,11 @@ export class WeatherService {
           .set('timezone', 'auto');
 
         return this.http.get(`${this.BASE_URL}/forecast`, { params }).pipe(
-          map((response: any) => this.transformWeatherData(response, city, coords))
+          map((response: any) => this.transformWeatherData(response, city, coords)),
+          tap(weather => {
+            this.checkForWeatherChanges(city, weather);
+            this.lastWeatherData.set(city, weather);
+          })
         );
       }),
       catchError(error => {
@@ -81,6 +88,10 @@ export class WeatherService {
 
     return this.http.get(`${this.BASE_URL}/forecast`, { params }).pipe(
       map((response: any) => this.transformWeatherData(response, '', { latitude: lat, longitude: lon })),
+      tap(weather => {
+        this.checkForWeatherChanges(weather.city, weather);
+        this.lastWeatherData.set(weather.city, weather);
+      }),
       catchError(error => {
         console.error('Error fetching weather data by coordinates:', error);
         throw error;
@@ -170,12 +181,26 @@ export class WeatherService {
     );
   }
 
+  private checkForWeatherChanges(city: string, newWeather: WeatherData): void {
+    const lastWeather = this.lastWeatherData.get(city);
+    
+    if (!lastWeather) {
+      return;
+    }
+
+    const tempDiff = Math.abs(newWeather.temperature - lastWeather.temperature);
+    const descriptionChanged = newWeather.description !== lastWeather.description;
+    
+    if (tempDiff >= 5 || descriptionChanged) {
+      this.notificationService.showWeatherChangeNotification(city, lastWeather, newWeather);
+    }
+  }
+
   private transformWeatherData(data: any, cityName: string, coords: {latitude: number, longitude: number}): WeatherData {
     const current = data.current_weather;
     const hourly = data.hourly;
     const daily = data.daily;
     
-    // Get current hour index
     const currentTime = new Date(current.time);
     const currentHour = currentTime.getHours();
     const hourIndex = data.hourly.time.findIndex((time: string) => 
@@ -184,16 +209,16 @@ export class WeatherService {
 
     return {
       city: cityName || 'Current Location',
-      country: '', // Open-Meteo doesn't provide country info easily
+      country: '',
       temperature: Math.round(current.temperature),
-      feelsLike: Math.round(current.temperature), // Approximation
+      feelsLike: Math.round(current.temperature),
       humidity: Math.round(hourly.relative_humidity_2m[hourIndex] || 0),
       pressure: Math.round(hourly.pressure_msl[hourIndex] || 0),
       windSpeed: Math.round(hourly.wind_speed_10m[hourIndex] || 0),
       windDirection: this.getWindDirection(current.winddirection),
       description: this.getWeatherDescription(current.weathercode),
       icon: this.getWeatherIcon(current.weathercode),
-      visibility: Math.round((hourly.visibility[hourIndex] || 10000) / 1000), // Convert to km
+      visibility: Math.round((hourly.visibility[hourIndex] || 10000) / 1000),
       uvIndex: Math.round(hourly.uv_index[hourIndex] || 0),
       sunrise: this.formatTime(daily.sunrise[0]),
       sunset: this.formatTime(daily.sunset[0]),
@@ -231,32 +256,31 @@ export class WeatherService {
   }
 
   private getWeatherIcon(weatherCode: number): string {
-    // WMO Weather interpretation codes (WW)
     const iconMap: { [key: number]: string } = {
-      0: 'wb_sunny',        // Clear sky
-      1: 'wb_sunny',        // Mainly clear
-      2: 'wb_cloudy',       // Partly cloudy
-      3: 'cloud',           // Overcast
-      45: 'foggy',          // Fog
-      48: 'foggy',          // Depositing rime fog
-      51: 'grain',          // Light drizzle
-      53: 'grain',          // Moderate drizzle
-      55: 'grain',          // Dense drizzle
-      61: 'grain',          // Slight rain
-      63: 'grain',          // Moderate rain
-      65: 'grain',          // Heavy rain
-      71: 'ac_unit',        // Slight snow fall
-      73: 'ac_unit',        // Moderate snow fall
-      75: 'ac_unit',        // Heavy snow fall
-      77: 'ac_unit',        // Snow grains
-      80: 'grain',          // Slight rain showers
-      81: 'grain',          // Moderate rain showers
-      82: 'grain',          // Violent rain showers
-      85: 'ac_unit',        // Slight snow showers
-      86: 'ac_unit',        // Heavy snow showers
-      95: 'thunderstorm',   // Thunderstorm
-      96: 'thunderstorm',   // Thunderstorm with slight hail
-      99: 'thunderstorm'    // Thunderstorm with heavy hail
+      0: 'wb_sunny',
+      1: 'wb_sunny',
+      2: 'wb_cloudy',
+      3: 'cloud',
+      45: 'foggy',
+      48: 'foggy',
+      51: 'grain',
+      53: 'grain',
+      55: 'grain',
+      61: 'grain',
+      63: 'grain',
+      65: 'grain',
+      71: 'ac_unit',
+      73: 'ac_unit',
+      75: 'ac_unit',
+      77: 'ac_unit',
+      80: 'grain',
+      81: 'grain',
+      82: 'grain',
+      85: 'ac_unit',
+      86: 'ac_unit',
+      95: 'thunderstorm',
+      96: 'thunderstorm',
+      99: 'thunderstorm'
     };
     return iconMap[weatherCode] || 'wb_cloudy';
   }

@@ -55,7 +55,6 @@
           <mat-autocomplete #auto="matAutocomplete" 
                            (optionSelected)="onCitySelected($event.option.value)">
             
-            <!-- Search History Section - показуємо тільки якщо немає результатів пошуку -->
             <div *ngIf="searchHistory().length > 0 && (!searchControl.value || searchControl.value.length <= 2)" class="autocomplete-section">
               <div class="section-header">
                 <mat-icon>history</mat-icon>
@@ -73,7 +72,6 @@
               </mat-option>
             </div>
             
-            <!-- Search Results Section - показуємо коли є результаті пошуку -->
             <div *ngIf="searchControl.value && searchControl.value.length > 2 && (filteredCities$ | async)?.length" class="autocomplete-section">
               <div class="section-header">
                 <mat-icon>search</mat-icon>

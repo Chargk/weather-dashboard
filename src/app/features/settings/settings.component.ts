@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from '../../shared/material.module';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-settings',
@@ -14,6 +15,7 @@ import { MaterialModule } from '../../shared/material.module';
 export class SettingsComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private platformId = inject(PLATFORM_ID);
+  private notificationService = inject(NotificationService);
 
   protected readonly temperatureUnit = new FormControl('celsius');
   protected readonly windUnit = new FormControl('kmh');
@@ -21,6 +23,8 @@ export class SettingsComponent implements OnInit {
   protected readonly notifications = signal(true);
   protected readonly autoRefresh = signal(true);
   protected readonly refreshInterval = new FormControl(15);
+  protected readonly notificationsEnabled = signal(false);
+  protected readonly notificationPermission = signal<NotificationPermission>('default');
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -31,29 +35,28 @@ export class SettingsComponent implements OnInit {
   private loadSettings() {
     if (!isPlatformBrowser(this.platformId)) return;
     
-    // Load temperature unit
     const tempUnit = localStorage.getItem('temperature-unit') || 'celsius';
     this.temperatureUnit.setValue(tempUnit);
 
-    // Load wind unit
     const windUnit = localStorage.getItem('wind-unit') || 'kmh';
     this.windUnit.setValue(windUnit);
 
-    // Load pressure unit
     const pressureUnit = localStorage.getItem('pressure-unit') || 'hpa';
     this.pressureUnit.setValue(pressureUnit);
 
-    // Load notifications
     const notifications = localStorage.getItem('notifications') !== 'false';
     this.notifications.set(notifications);
 
-    // Load auto refresh
     const autoRefresh = localStorage.getItem('auto-refresh') !== 'false';
     this.autoRefresh.set(autoRefresh);
 
-    // Load refresh interval
     const interval = parseInt(localStorage.getItem('refresh-interval') || '15');
     this.refreshInterval.setValue(interval);
+
+    const notificationsEnabled = localStorage.getItem('notifications-enabled') === 'true';
+    this.notificationsEnabled.set(notificationsEnabled);
+    
+    this.notificationPermission.set(this.notificationService.getPermissionStatus());
   }
 
   protected saveSettings() {
@@ -65,14 +68,17 @@ export class SettingsComponent implements OnInit {
     localStorage.setItem('notifications', this.notifications().toString());
     localStorage.setItem('auto-refresh', this.autoRefresh().toString());
     localStorage.setItem('refresh-interval', this.refreshInterval.value?.toString() || '15');
-
-    this.snackBar.open('Settings saved successfully!', 'Close', {
-      duration: 2000
-    });
+    localStorage.setItem('notifications-enabled', this.notificationsEnabled().toString());
   }
 
   protected toggleNotifications() {
-    this.notifications.set(!this.notifications());
+    if (this.notificationPermission() !== 'granted') {
+      this.requestNotificationPermission();
+      return;
+    }
+    
+    this.notificationsEnabled.set(!this.notificationsEnabled());
+    this.saveSettings();
   }
 
   protected toggleAutoRefresh() {
@@ -90,5 +96,22 @@ export class SettingsComponent implements OnInit {
     this.snackBar.open('Settings reset to defaults', 'Close', {
       duration: 2000
     });
+  }
+
+  protected async requestNotificationPermission() {
+    const granted = await this.notificationService.requestPermission();
+    this.notificationPermission.set(this.notificationService.getPermissionStatus());
+    
+    if (granted) {
+      this.notificationsEnabled.set(true);
+      this.saveSettings();
+      this.snackBar.open('Notifications enabled!', 'Close', {
+        duration: 2000
+      });
+    } else {
+      this.snackBar.open('Notification permission denied', 'Close', {
+        duration: 3000
+      });
+    }
   }
 }

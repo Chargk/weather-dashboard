@@ -6,6 +6,7 @@ import { Observable, debounceTime, distinctUntilChanged, switchMap, startWith, m
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from '../material.module';
 import { WeatherService } from '../../services/weather.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-navigation',
@@ -18,6 +19,7 @@ export class NavigationComponent implements OnInit {
   private weatherService = inject(WeatherService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private notificationService = inject(NotificationService);
 
   protected readonly searchControl = new FormControl('');
   protected readonly filteredCities$: Observable<string[]>;
@@ -92,38 +94,39 @@ export class NavigationComponent implements OnInit {
     });
   }
 
-  protected useCurrentLocation() {
+  protected async useCurrentLocation() {
     this.snackBar.open('Getting your location...', 'Close', {
       duration: 2000
     });
 
-    this.weatherService.getCurrentLocation()
-      .then(coords => {
-        this.weatherService.getWeatherByCoords(coords.lat, coords.lon).subscribe({
-          next: (weather) => {
-            const cityString = `${weather.city}, ${weather.country}`;
-            this.addToSearchHistory(cityString);
-            this.router.navigate(['/dashboard'], { 
-              queryParams: { city: cityString } 
-            });
-            
-            this.snackBar.open(`Location found: ${weather.city}`, 'Close', {
-              duration: 2000
-            });
-          },
-          error: (error) => {
-            console.error('Error getting location weather:', error);
-            this.snackBar.open('Error getting weather for your location.', 'Close', {
-              duration: 3000
-            });
-          }
-        });
-      })
-      .catch(error => {
-        console.error('Error getting location:', error);
-        this.snackBar.open('Unable to get your location. Please enable location services.', 'Close', {
-          duration: 3000
-        });
+    try {
+      const coords = await this.weatherService.getCurrentLocation();
+      this.weatherService.getWeatherByCoords(coords.lat, coords.lon).subscribe({
+        next: (weather) => {
+          const cityString = `${weather.city}, ${weather.country}`;
+          this.addToSearchHistory(cityString);
+          this.router.navigate(['/dashboard'], { 
+            queryParams: { city: cityString } 
+          });
+          
+          this.notificationService.showLocationFoundNotification(weather.city);
+          
+          this.snackBar.open(`Location found: ${weather.city}`, 'Close', {
+            duration: 2000
+          });
+        },
+        error: (error) => {
+          console.error('Error getting location weather:', error);
+          this.snackBar.open('Error getting weather for your location.', 'Close', {
+            duration: 3000
+          });
+        }
       });
+    } catch (error) {
+      console.error('Error getting location:', error);
+      this.snackBar.open('Unable to get your location. Please enable location services.', 'Close', {
+        duration: 3000
+      });
+    }
   }
 }
