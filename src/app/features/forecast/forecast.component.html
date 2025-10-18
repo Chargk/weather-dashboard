@@ -1,89 +1,100 @@
 <div class="forecast-container fade-in">
-    <!-- Header -->
-    <div class="page-header">
-      <h1 class="page-title">
-        <mat-icon>trending_up</mat-icon>
-        5-Day Forecast
-      </h1>
-      <div class="location-info" *ngIf="currentWeather()">
-        <mat-icon>location_on</mat-icon>
-        {{ currentWeather()!.city }}{{ currentWeather()!.country ? ', ' + currentWeather()!.country : '' }}
-      </div>
-    </div>
-  
-    <!-- Loading State -->
-    <div *ngIf="isLoading()" class="loading-container">
-      <mat-spinner diameter="60"></mat-spinner>
-      <p>Loading forecast data...</p>
-    </div>
-  
-    <!-- Current Weather Summary -->
-    <div *ngIf="!isLoading() && currentWeather()" class="current-summary">
-      <mat-card class="summary-card">
-        <mat-card-content>
-          <div class="summary-content">
-            <div class="current-temp">
-              <mat-icon class="weather-icon">{{ currentWeather()!.icon }}</mat-icon>
-              <div class="temp-info">
-                <div class="temperature" [style.color]="getTemperatureColor(currentWeather()!.temperature)">
-                  {{ currentWeather()!.temperature }}°
-                </div>
-                <div class="description">{{ currentWeather()!.description | titlecase }}</div>
-              </div>
-            </div>
-            
-            <div class="temp-range">
-              <div class="range-item">
-                <span class="label">High</span>
-                <span class="value" [style.color]="getTemperatureColor(getMaxTemp())">
-                  {{ getMaxTemp() }}°
-                </span>
-              </div>
-              <div class="range-item">
-                <span class="label">Low</span>
-                <span class="value" [style.color]="getTemperatureColor(getMinTemp())">
-                  {{ getMinTemp() }}°
-                </span>
-              </div>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  
-    <!-- Forecast Grid -->
-    <div *ngIf="!isLoading() && forecast().length > 0" class="forecast-grid">
-      <mat-card *ngFor="let day of forecast(); let i = index" class="forecast-card">
-        <mat-card-header>
-          <mat-card-title>{{ day.day }}</mat-card-title>
-          <mat-card-subtitle>{{ day.date | date:'MMM d' }}</mat-card-subtitle>
-        </mat-card-header>
-  
-        <mat-card-content>
-          <div class="forecast-details">
-            <div class="weather-icon">
-              <mat-icon>{{ getWeatherIcon(day.description) }}</mat-icon>
-            </div>
-            
-            <div class="temperature-range">
-              <div class="high-temp" [style.color]="getTemperatureColor(day.high)">
-                {{ day.high }}°
-              </div>
-              <div class="low-temp" [style.color]="getTemperatureColor(day.low)">
-                {{ day.low }}°
-              </div>
-            </div>
-            
-            <div class="description">{{ day.description | titlecase }}</div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  
-    <!-- No Data State -->
-    <div *ngIf="!isLoading() && forecast().length === 0" class="no-data">
-      <mat-icon class="no-data-icon">cloud_off</mat-icon>
-      <h2>No Forecast Data</h2>
-      <p>Unable to load forecast data. Please try again later.</p>
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>trending_up</mat-icon>
+      5-Day Forecast
+    </h1>
+    <div class="location-info" *ngIf="currentWeather()">
+      <mat-icon>location_on</mat-icon>
+      <span>{{ currentWeather()?.city }}{{ currentWeather()?.country ? ', ' + currentWeather()?.country : '' }}</span>
     </div>
   </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Loading forecast data...</p>
+  </div>
+
+  <!-- Current Weather Summary -->
+  <div *ngIf="!isLoading() && currentWeather()" class="current-summary">
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="summary-content">
+          <div class="current-temp">
+            <mat-icon class="weather-icon">{{ getWeatherIcon(currentWeather()!.description) }}</mat-icon>
+            <div class="temp-info">
+              <div class="temperature" [style.color]="getTemperatureColor(currentWeather()!.temperature)">
+                {{ currentWeather()!.temperature }}°
+              </div>
+              <div class="description">{{ currentWeather()!.description | titlecase }}</div>
+            </div>
+          </div>
+          <div class="temp-range">
+            <div class="range-item">
+              <span class="label">High</span>
+              <span class="value" [style.color]="getTemperatureColor(getMaxTemp())">{{ getMaxTemp() }}°</span>
+            </div>
+            <div class="range-item">
+              <span class="label">Low</span>
+              <span class="value" [style.color]="getTemperatureColor(getMinTemp())">{{ getMinTemp() }}°</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Temperature Chart -->
+  <div *ngIf="!isLoading() && forecast().length > 0" class="chart-section">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>show_chart</mat-icon>
+          Temperature Trend
+        </mat-card-title>
+        <mat-card-subtitle>5-day temperature forecast</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <canvas baseChart
+                  [data]="chartData"
+                  [options]="chartOptions"
+                  [type]="chartType">
+          </canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Forecast Grid -->
+  <div *ngIf="!isLoading() && forecast().length > 0" class="forecast-grid">
+    <mat-card *ngFor="let day of forecast()" class="forecast-card">
+      <mat-card-header>
+        <mat-card-title>{{ day.day }}</mat-card-title>
+        <mat-card-subtitle>{{ day.date }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="forecast-details">
+          <div class="weather-icon">
+            <mat-icon>{{ getWeatherIcon(day.description) }}</mat-icon>
+          </div>
+          <div class="temperature-range">
+            <span class="high-temp" [style.color]="getTemperatureColor(day.high)">{{ day.high }}°</span>
+            <span class="low-temp" [style.color]="getTemperatureColor(day.low)">{{ day.low }}°</span>
+          </div>
+          <div class="description">{{ day.description | titlecase }}</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- No Data State -->
+  <div *ngIf="!isLoading() && forecast().length === 0" class="no-data">
+    <mat-icon class="no-data-icon">cloud_off</mat-icon>
+    <h2>No Forecast Data</h2>
+    <p>Unable to load forecast data. Please try again later.</p>
+  </div>
+</div>

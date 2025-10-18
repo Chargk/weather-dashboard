@@ -1,65 +1,160 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, signal, inject, PLATFORM_ID, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialModule } from '../../shared/material.module';
 import { WeatherService, WeatherData, ForecastData } from '../../services/weather.service';
+import { ChartConfiguration, ChartData, ChartType, registerables } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+
+// Register Chart.js components
+import { Chart } from 'chart.js';
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-forecast',
   standalone: true,
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, BaseChartDirective],
   templateUrl: './forecast.component.html',
   styleUrls: ['./forecast.component.scss']
 })
-export class ForecastComponent implements OnInit {
-  private weatherService = inject(WeatherService);
-  private snackBar = inject(MatSnackBar);
-  private route = inject(ActivatedRoute);
+export class ForecastComponent implements OnInit, AfterViewInit {
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
-  protected readonly isLoading = signal(true);
+  private weatherService = inject(WeatherService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
+  private platformId = inject(PLATFORM_ID);
+
+  protected readonly isLoading = signal(false);
   protected readonly currentWeather = signal<WeatherData | null>(null);
   protected readonly forecast = signal<ForecastData[]>([]);
-  protected readonly currentCity = signal('Kyiv');
+
+  // Chart configuration
+  protected chartData: ChartData = {
+    labels: [],
+    datasets: [{
+      label: 'Temperature',
+      data: [],
+      borderColor: '#667eea',
+      backgroundColor: 'rgba(102, 126, 234, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#667eea',
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 6,
+      pointHoverRadius: 8
+    }]
+  };
+
+  protected readonly chartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      x: {
+        type: 'category',
+        grid: {
+          display: false
+        }
+      },
+      y: {
+        type: 'linear',
+        grid: {
+          color: 'rgba(102, 126, 234, 0.1)'
+        }
+      }
+    }
+  };
+
+  protected readonly chartType: ChartType = 'line';
 
   ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadForecastData();
+    }
+  }
+
+  ngAfterViewInit() {
+    // Chart is now available
+  }
+
+  private loadForecastData() {
+    this.isLoading.set(true);
+    
     this.route.queryParams.subscribe(params => {
-      const city = params['city'] || this.currentCity();
-      this.loadForecastData(city);
+      const city = params['city'] || 'London';
+      
+      this.weatherService.getCurrentWeather(city).subscribe({
+        next: (weather) => {
+          this.currentWeather.set(weather);
+        },
+        error: (error) => {
+          console.error('Error loading current weather:', error);
+          this.snackBar.open('Error loading current weather', 'Close', {
+            duration: 3000
+          });
+        }
+      });
+
+      this.weatherService.getForecast(city).subscribe({
+        next: (forecast) => {
+          this.forecast.set(forecast);
+          this.updateChartData(forecast);
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading forecast:', error);
+          this.snackBar.open('Error loading forecast data', 'Close', {
+            duration: 3000
+          });
+          this.isLoading.set(false);
+        }
+      });
     });
   }
 
-  private loadForecastData(city: string) {
-    this.isLoading.set(true);
+  private updateChartData(forecast: ForecastData[]) {
+    console.log('Updating chart data:', forecast);
     
-    // Load current weather
-    this.weatherService.getCurrentWeather(city).subscribe({
-      next: (weather) => {
-        this.currentWeather.set(weather);
-        this.currentCity.set(city);
-      },
-      error: (error) => {
-        console.error('Error loading current weather:', error);
-        this.snackBar.open('Error loading current weather', 'Close', {
-          duration: 3000
-        });
+    // Map day names to proper day names
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    const labels = forecast.map((day, index) => {
+      if (day.day === 'Today') {
+        return 'Today';
+      } else {
+        // For all other days (including Tomorrow), use the actual day name
+        const today = new Date();
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + index);
+        return dayNames[targetDate.getDay()];
       }
     });
-
-    // Load forecast
-    this.weatherService.getForecast(city).subscribe({
-      next: (forecast) => {
-        this.forecast.set(forecast);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading forecast:', error);
-        this.snackBar.open('Error loading forecast data', 'Close', {
-          duration: 3000
-        });
-        this.isLoading.set(false);
+    
+    const data = forecast.map(day => day.high);
+    
+    // Update existing chart data object
+    this.chartData.labels = labels;
+    this.chartData.datasets[0].data = data;
+    
+    // Force chart update after view is initialized
+    setTimeout(() => {
+      if (this.chart) {
+        this.chart.update();
       }
-    });
+    }, 100);
+    
+    console.log('Chart data updated:', this.chartData);
+    console.log('Labels:', labels);
+    console.log('Data:', data);
   }
 
   protected getTemperatureColor(temp: number): string {
@@ -72,14 +167,12 @@ export class ForecastComponent implements OnInit {
 
   protected getMaxTemp(): number {
     const forecast = this.forecast();
-    if (forecast.length === 0) return 0;
-    return Math.max(...forecast.map(day => day.high));
+    return forecast.length > 0 ? Math.max(...forecast.map(day => day.high)) : 0;
   }
 
   protected getMinTemp(): number {
     const forecast = this.forecast();
-    if (forecast.length === 0) return 0;
-    return Math.min(...forecast.map(day => day.low));
+    return forecast.length > 0 ? Math.min(...forecast.map(day => day.low)) : 0;
   }
 
   protected getWeatherIcon(description: string): string {
