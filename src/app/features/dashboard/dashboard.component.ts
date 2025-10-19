@@ -27,9 +27,20 @@ export class DashboardComponent implements OnInit {
     // Check if city is provided in query params
     this.route.queryParams.subscribe(params => {
       if (params['city']) {
-        this.loadWeatherData(params['city']);
+        // Check if it's "Current Location" - if so, use the current location method
+        if (params['city'].includes('Current Location')) {
+          this.useCurrentLocation();
+        } else {
+          this.loadWeatherData(params['city']);
+        }
       } else {
-        this.loadWeatherData(this.currentCity());
+        // Only load default city if current city is not "Current Location"
+        const currentCity = this.currentCity();
+        if (currentCity !== 'Current Location' && !currentCity.includes('Current Location')) {
+          this.loadWeatherData(currentCity);
+        }
+        // If current city is "Current Location", don't load anything here
+        // The user needs to click "Use Current Location" button
       }
     });
   }
@@ -77,29 +88,42 @@ export class DashboardComponent implements OnInit {
     
     this.weatherService.getCurrentLocation()
       .then(coords => {
+        // Load current weather
         this.weatherService.getWeatherByCoords(coords.lat, coords.lon).subscribe({
           next: (weather) => {
             this.currentWeather.set(weather);
-            this.currentCity.set(`${weather.city}, ${weather.country}`);
+            // For current location, just use the city name without country
+            if (weather.city === 'Current Location') {
+              this.currentCity.set('Current Location');
+            } else {
+              this.currentCity.set(`${weather.city}, ${weather.country}`);
+            }
             this.isLoading.set(false);
             
-            this.snackBar.open(`Location found: ${weather.city}`, 'Close', {
+            // Show success message
+            this.snackBar.open(`Weather data loaded for ${weather.city}`, 'Close', {
               duration: 2000
-            });
-            
-            // Also load forecast for this location
-            this.weatherService.getForecast(`${weather.city}, ${weather.country}`).subscribe({
-              next: (forecast) => {
-                this.forecast.set(forecast);
-              }
             });
           },
           error: (error) => {
-            console.error('Error loading weather by location:', error);
-            this.snackBar.open('Error getting your location weather.', 'Close', {
+            console.error('Error loading weather:', error);
+            this.snackBar.open('Error loading weather data. Please try again.', 'Close', {
               duration: 3000
             });
             this.isLoading.set(false);
+          }
+        });
+  
+        // Load forecast data for current location
+        this.weatherService.getForecastByCoords(coords.lat, coords.lon).subscribe({
+          next: (forecast) => {
+            this.forecast.set(forecast);
+          },
+          error: (error) => {
+            console.error('Error loading forecast:', error);
+            this.snackBar.open('Error loading forecast data.', 'Close', {
+              duration: 2000
+            });
           }
         });
       })
@@ -113,7 +137,38 @@ export class DashboardComponent implements OnInit {
   }
 
   protected refreshWeather() {
-    this.loadWeatherData(this.currentCity());
+    const weather = this.currentWeather();
+    if (weather && weather.coord) {
+      // If we have coordinates (from current location), use them
+      this.weatherService.getWeatherByCoords(weather.coord.lat, weather.coord.lon).subscribe({
+        next: (weatherData) => {
+          this.currentWeather.set(weatherData);
+          this.currentCity.set(`${weatherData.city}, ${weatherData.country}`);
+          
+          // Also refresh forecast
+          this.weatherService.getForecastByCoords(weather.coord.lat, weather.coord.lon).subscribe({
+            next: (forecast) => {
+              this.forecast.set(forecast);
+            },
+            error: (error) => {
+              console.error('Error loading forecast:', error);
+              this.snackBar.open('Error loading forecast data.', 'Close', {
+                duration: 2000
+              });
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error loading weather:', error);
+          this.snackBar.open('Error loading weather data. Please try again.', 'Close', {
+            duration: 3000
+          });
+        }
+      });
+    } else {
+      // Fallback to city name if no coordinates
+      this.loadWeatherData(this.currentCity());
+    }
   }
 
   protected addToFavorites() {

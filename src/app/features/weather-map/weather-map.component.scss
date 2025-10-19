@@ -1,0 +1,157 @@
+.weather-map-container {
+    min-height: calc(100vh - 80px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      opacity: 0.3;
+      pointer-events: none;
+    }
+  }
+  
+  .page-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 10px 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+  
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+      font-weight: 300;
+    }
+  }
+  
+  .map-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+    margin-bottom: 20px;
+  }
+  
+  .map-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 600;
+      text-transform: none;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+  
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+  
+      mat-icon {
+        width: 20px;
+        height: 20px;
+        font-size: 20px;
+      }
+    }
+  }
+  
+  .map-container {
+    height: 500px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .map-info {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 1;
+  
+    p {
+      margin: 5px 0;
+    }
+  }
+  
+  // Custom marker styles
+  :host ::ng-deep .custom-marker {
+    background: transparent !important;
+    border: none !important;
+  }
+  
+  .weather-marker {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid white;
+    min-width: 60px;
+    text-align: center;
+    transition: all 0.3s ease;
+  
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+  
+    .marker-content {
+      .city-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 2px;
+      }
+  
+      .temperature {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+      }
+    }
+  }
+  
+  // Responsive design
+  @media (max-width: 768px) {
+    .weather-map-container {
+      padding: 15px;
+    }
+  
+    .page-title {
+      font-size: 2rem;
+    }
+  
+    .map-container {
+      height: 400px;
+    }
+  
+    .map-controls button {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+    }
+  }

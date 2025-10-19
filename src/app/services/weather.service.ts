@@ -87,7 +87,7 @@ export class WeatherService {
       .set('timezone', 'auto');
 
     return this.http.get(`${this.BASE_URL}/forecast`, { params }).pipe(
-      map((response: any) => this.transformWeatherData(response, '', { latitude: lat, longitude: lon })),
+      map((response: any) => this.transformWeatherData(response, 'Current Location', { latitude: lat, longitude: lon })),
       tap(weather => {
         this.checkForWeatherChanges(weather.city, weather);
         this.lastWeatherData.set(weather.city, weather);
@@ -156,6 +156,7 @@ export class WeatherService {
       );
     });
   }
+
 
   private getCoordinates(city: string): Observable<{latitude: number, longitude: number}> {
     const params = new HttpParams()
@@ -336,5 +337,23 @@ export class WeatherService {
     } else {
       return date.toLocaleDateString('en-US', { weekday: 'long' });
     }
+  }
+
+  // Додай цей метод в WeatherService
+  getForecastByCoords(lat: number, lon: number): Observable<ForecastData[]> {
+    const params = new HttpParams()
+      .set('latitude', lat.toString())
+      .set('longitude', lon.toString())
+      .set('daily', 'temperature_2m_max,temperature_2m_min,weather_code')
+      .set('timezone', 'auto')
+      .set('forecast_days', '5');
+
+    return this.http.get(`${this.BASE_URL}/forecast`, { params }).pipe(
+      map((response: any) => this.transformForecastData(response)),
+      catchError(error => {
+        console.error('Error fetching forecast data by coordinates:', error);
+        throw error;
+      })
+    );
   }
 }

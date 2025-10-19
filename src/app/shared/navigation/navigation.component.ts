@@ -1,5 +1,5 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, switchMap, startWith, map } from 'rxjs';
@@ -20,6 +20,7 @@ export class NavigationComponent implements OnInit {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private notificationService = inject(NotificationService);
+  private platformId = inject(PLATFORM_ID);
 
   protected readonly searchControl = new FormControl('');
   protected readonly filteredCities$: Observable<string[]>;
@@ -43,23 +44,29 @@ export class NavigationComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadSearchHistory();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadSearchHistory();
+    }
   }
 
   private loadSearchHistory() {
-    const stored = localStorage.getItem('search-history');
-    if (stored) {
-      try {
-        const history = JSON.parse(stored);
-        this.searchHistory.set(history);
-      } catch (error) {
-        console.error('Error loading search history:', error);
+    if (isPlatformBrowser(this.platformId)) {
+      const stored = localStorage.getItem('search-history');
+      if (stored) {
+        try {
+          const history = JSON.parse(stored);
+          this.searchHistory.set(history);
+        } catch (error) {
+          console.error('Error loading search history:', error);
+        }
       }
     }
   }
 
   private saveSearchHistory() {
-    localStorage.setItem('search-history', JSON.stringify(this.searchHistory()));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('search-history', JSON.stringify(this.searchHistory()));
+    }
   }
 
   protected onCitySelected(city: string) {
