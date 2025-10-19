@@ -14,7 +14,7 @@
             <mat-icon class="weather-icon">{{ currentWeather()!.icon }}</mat-icon>
           </div>
           <mat-card-title class="location-title">
-            {{ currentWeather()!.city }}, {{ currentWeather()!.country }}
+            {{ currentWeather()!.city }}{{ currentWeather()!.country ? ', ' + currentWeather()!.country : '' }}
           </mat-card-title>
           <mat-card-subtitle class="weather-description">
             {{ currentWeather()!.description | titlecase }}
