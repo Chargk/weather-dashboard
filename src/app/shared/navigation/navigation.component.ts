@@ -85,9 +85,9 @@ export class NavigationComponent implements OnInit {
 
   private addToSearchHistory(city: string) {
     const currentHistory = this.searchHistory();
-    // Видаляємо якщо вже є, щоб додати на початок
+    // Remove if already exists to add to beginning
     const filteredHistory = currentHistory.filter(h => h !== city);
-    // Додаємо на початок і обмежуємо до 10 елементів
+    // Add to beginning and limit to 10 items
     const updatedHistory = [city, ...filteredHistory].slice(0, 10);
     this.searchHistory.set(updatedHistory);
     this.saveSearchHistory();

@@ -339,7 +339,6 @@ export class WeatherService {
     }
   }
 
-  // Додай цей метод в WeatherService
   getForecastByCoords(lat: number, lon: number): Observable<ForecastData[]> {
     const params = new HttpParams()
       .set('latitude', lat.toString())

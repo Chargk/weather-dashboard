@@ -95,7 +95,7 @@
       font-size: 20px;
       font-weight: 600;
       color: #333;
-      transform: translateY(2px); // Зміщуємо заголовок трохи вгору
+      transform: translateY(2px);
     }
   }
   
@@ -108,7 +108,7 @@
       min-width: 300px;
       display: flex;
       align-items: center;
-      transform: translateY(10px); // Зміщуємо трохи вниз
+      transform: translateY(10px); 
       
       .mat-mdc-form-field-wrapper {
         background-color: rgba(255, 255, 255, 0.9);
@@ -129,7 +129,7 @@
       }
       
       .mat-mdc-form-field-subscript-wrapper {
-        display: none; // Приховуємо підпис
+        display: none;
       }
     }
     
