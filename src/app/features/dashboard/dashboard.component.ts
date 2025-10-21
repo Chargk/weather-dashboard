@@ -54,11 +54,6 @@ export class DashboardComponent implements OnInit {
         this.currentWeather.set(weather);
         this.currentCity.set(city);
         this.isLoading.set(false);
-        
-        // Show success message
-        this.snackBar.open(`Weather data loaded for ${weather.city}`, 'Close', {
-          duration: 2000
-        });
       },
       error: (error) => {
         console.error('Error loading weather:', error);
@@ -99,11 +94,6 @@ export class DashboardComponent implements OnInit {
               this.currentCity.set(`${weather.city}, ${weather.country}`);
             }
             this.isLoading.set(false);
-            
-            // Show success message
-            this.snackBar.open(`Weather data loaded for ${weather.city}`, 'Close', {
-              duration: 2000
-            });
           },
           error: (error) => {
             console.error('Error loading weather:', error);
